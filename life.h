@@ -3,53 +3,23 @@
 #include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 
-class Life {
+class LifeTemplate {
 public:
-  Life(const std::size_t width = 100, const std::size_t height = 100);
-  Life random(const std::size_t width, const std::size_t height);
-  ~Life();
+  LifeTemplate() {}
+  LifeTemplate(const std::size_t w, const std::size_t h) {}
+  LifeTemplate(const std::size_t w, const std::size_t h, const double rd) {}
+  ~LifeTemplate(){};
 
-  void set(const std::size_t idx);
-  void clear(const std::size_t idx);
+  virtual void set(const std::vector<std::size_t> idxs) = 0;
 
-  void set(const std::size_t row, const std::size_t col);
-  void clear(const std::size_t row, const std::size_t col);
+  virtual void clear(const std::vector<std::size_t> idxs) = 0;
 
-  void set(const std::vector<std::size_t> idxs);
-  void clear(const std::vector<std::size_t> idxs);
+  virtual bool get(const std::size_t idx) = 0;
 
-  bool get(const std::size_t idx) { return m_board[idx]; }
-  void step();
+  virtual void step() = 0;
+  virtual std::string toString() = 0;
 
-  std::string toString() {
-    int n{0};
-    std::stringstream ss;
-    for (bool c : m_board) {
-      ss << (c ? '#' : ' ');
-      if (n > 0 && n % m_width == 0)
-        ss << std::endl;
-      n++;
-    }
-
-    return ss.str();
-  }
-
-private:
-  enum Change {
-    Live,
-    Dead,
-  };
-
-  struct BoardChange {
-    Change change;
-    std::size_t idx;
-  };
-
-  std::vector<bool> m_board;
-  const std::size_t m_width;
-  const std::size_t m_height;
-
-  friend const void print(const Life &);
 };
