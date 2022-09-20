@@ -1,6 +1,15 @@
+#ifdef LINT
+#include "naive.h"
+#endif
+
 #ifdef NEIGHBOUR
 #include "neighbour_refs.h"
 #endif
+
+#ifdef NEIGHBOUR_PAR
+#include "neighbour_refs.h"
+#endif
+
 #ifdef NAIVE
 #include "naive.h"
 #endif
@@ -126,7 +135,7 @@ int main(int argc, char **argv) {
           constexpr std::size_t ITERS{100};
           std::vector<std::pair<std::size_t, std::chrono::duration<double>>>
               times{};
-          for (std::size_t n{8}; n <= 512; n *= 2) {
+          for (std::size_t n{8}; n <= 2048; n *= 2) {
             Life life{n, n, 0.5};
             auto start = std::chrono::steady_clock::now();
             for (int i{0}; i < ITERS; i++) {
@@ -145,11 +154,8 @@ int main(int argc, char **argv) {
           std::cout << ss.str();
         }});
   }
-  std::thread t0([&]() { stepCorrectness.run(); });
-  std::thread t1([&]() { stepPerformance.run(); });
-
-  t0.join();
-  t1.join();
+  stepCorrectness.run();
+  stepPerformance.run();
 
   return 0;
 }

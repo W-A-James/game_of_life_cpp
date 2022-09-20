@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-std=c++17, -Wpedantic]
+  Add: [-std=c++17, -Wpedantic, -DLINT]
