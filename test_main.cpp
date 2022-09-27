@@ -7,7 +7,7 @@
 #endif
 
 #ifdef NEIGHBOUR_PAR
-#include "neighbour_refs.h"
+#include "neighbour_refs_par.h"
 #endif
 
 #ifdef NAIVE

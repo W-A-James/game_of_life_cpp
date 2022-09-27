@@ -9,6 +9,10 @@ using namespace std;
 Life::Life(const size_t w, const size_t h) : m_width(w), m_height(h) {
   m_board = new bool[w * h];
   m_neighbours = new size_t[w * h * 8];
+  m_processor_count = std::thread::hardware_concurrency();
+  m_run_par = (m_width * m_height >= 1024 * 1024) && (m_processor_count) > 1;
+  m_chunk_size = (m_width * m_height) / (m_processor_count - 1);
+  m_rem = m_width * m_height % (m_processor_count - 1);
   for (size_t idx{0}; idx < w * h; idx++) {
     int neighbourIdx{0};
     size_t rowNum = idx / m_width;
@@ -32,10 +36,18 @@ Life::Life(const size_t w, const size_t h) : m_width(w), m_height(h) {
 
     m_board[idx] = false;
   }
-  m_processor_count = std::thread::hardware_concurrency();
-  m_run_par = (m_width * m_height >= 1024 * 1024) && (m_processor_count) > 1;
-  m_chunk_size = (m_width * m_height) / (m_processor_count - 1);
-  m_rem = m_width * m_height % (m_processor_count - 1);
+
+  if (m_run_par) {
+    m_num_chunks = m_processor_count - 1;
+    if (m_rem != 0) {
+      m_num_chunks += 1;
+    }
+    m_changes = new vector<BoardChange> *[m_num_chunks];
+
+    for (size_t i{0}; i < m_num_chunks; i++) {
+      m_changes[i] = new vector<BoardChange>;
+    }
+  }
 }
 
 Life::Life(const size_t w, const size_t h, const double rd) : Life(w, h) {
@@ -51,13 +63,18 @@ Life::Life(const size_t w, const size_t h, const double rd) : Life(w, h) {
 Life::~Life() {
   delete[] m_neighbours;
   delete[] m_board;
+
+  if (m_run_par) {
+    for (size_t i{0}; i < m_num_chunks; i++) {
+      delete m_changes[i];
+    }
+
+    delete[] m_changes;
+  }
 }
 
 void Life::step() {
-  vector<BoardChange> changes{};
-
-  auto _step = [this](size_t start, size_t end) -> vector<BoardChange> * {
-    vector<BoardChange> *changes = new vector<BoardChange>;
+  auto _step = [this](size_t start, size_t end, size_t tNum) {
     for (size_t idx{start}; idx < end; idx++) {
       int numNeighbours{0};
       int neighbourIdxStart = 8 * idx;
@@ -69,36 +86,40 @@ void Life::step() {
 
       bool live = m_board[idx];
       if (live && ((numNeighbours < 2) || (numNeighbours > 3))) {
-        changes->push_back(BoardChange{Change::Dead, idx});
+        m_changes[tNum]->push_back(BoardChange{Change::Dead, idx});
       } else if (!live && (numNeighbours == 3)) {
-        changes->push_back(BoardChange{Change::Live, idx});
+        m_changes[tNum]->push_back(BoardChange{Change::Live, idx});
       }
     }
-    return changes;
   };
 
   if (m_run_par) {
     int tNum{0};
-    vector<future<vector<BoardChange> *>> handles{};
+    vector<future<void>> handles{};
 
     for (; tNum < m_processor_count - 1; tNum++) {
-      handles.push_back(std::async(std::launch::async, _step,
-                                   tNum * m_chunk_size,
-                                   tNum * m_chunk_size + m_chunk_size - 1));
+      handles.push_back(
+          std::async(std::launch::async, _step, tNum * m_chunk_size,
+                     tNum * m_chunk_size + m_chunk_size - 1, tNum));
     }
     if (m_rem > 0) {
       handles.push_back(std::async(std::launch::async, _step,
                                    tNum * m_chunk_size,
-                                   tNum * m_chunk_size + m_rem));
+                                   tNum * m_chunk_size + m_rem, tNum));
     }
-
+    tNum = 0;
     for (auto &handle : handles) {
-      for (auto change : *handle.get()) {
+      handle.get();
+    }
+    for (; tNum < m_num_chunks; tNum++) {
+      for (auto change : *m_changes[tNum]) {
         m_board[change.idx] = (change.change == Change::Live);
       }
+      m_changes[tNum]->clear();
     }
 
   } else {
+    vector<BoardChange> changes{};
     for (size_t idx{0}; idx < m_width * m_height; idx++) {
       int numNeighbours{0};
       int neighbourIdxStart = 8 * idx;
@@ -118,11 +139,6 @@ void Life::step() {
     for (auto change : changes) {
       m_board[change.idx] = (change.change == Change::Live);
     }
-  }
-}
-
-void _step(bool *cells, size_t start, size_t end, std::mutex *l) {
-  for (size_t idx{start}; idx < end; idx++) {
   }
 }
 
