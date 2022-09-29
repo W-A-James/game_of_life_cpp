@@ -2,6 +2,7 @@
 #include <future>
 #include <random>
 #include <shared_mutex>
+#include <sstream>
 #include <thread>
 
 using namespace std;
@@ -26,12 +27,12 @@ Life::Life(const size_t w, const size_t h) : m_width(w), m_height(h) {
     size_t iTimes8 = 8 * idx;
 
     m_neighbours[iTimes8] = topRow * m_width + leftCol;         // Top left
-    m_neighbours[iTimes8 + 1] = topRow * m_width;               // Above
+    m_neighbours[iTimes8 + 1] = topRow * m_width + colNum;      // Above
     m_neighbours[iTimes8 + 2] = topRow * m_width + rightCol;    // Top right
     m_neighbours[iTimes8 + 3] = rowNum * m_width + leftCol;     // Left
     m_neighbours[iTimes8 + 4] = rowNum * m_width + rightCol;    // Right
     m_neighbours[iTimes8 + 5] = bottomRow * m_width + leftCol;  // Bottom Left
-    m_neighbours[iTimes8 + 6] = bottomRow * m_width;            // Below
+    m_neighbours[iTimes8 + 6] = bottomRow * m_width + colNum;   // Below
     m_neighbours[iTimes8 + 7] = bottomRow * m_width + rightCol; // Bottom Right
 
     m_board[idx] = false;
@@ -152,6 +153,18 @@ void Life::clear(const vector<size_t> idxs) {
   for (auto idx : idxs) {
     m_board[idx] = false;
   }
+}
+
+std::string Life::toString() {
+  std::stringstream os;
+
+  for (size_t row{0}; row< m_height; row++) {
+    for (size_t col{0}; col < m_width; col++) {
+      os << (m_board[row * m_width + col] ? 'X' : ' ');
+    }
+    os << '\n';
+  }
+  return os.str();
 }
 
 bool Life::get(const size_t idx) { return m_board[idx]; }

@@ -1,9 +1,12 @@
 CXX_FLAGS = -std=c++17 -Wpedantic -g -lpthread
 OPT_FLAGS = -std=c++17 -Wpedantic -lpthread -O2
 BUILD_DIR = build
-TARGETS = $(BUILD_DIR)/neighbour_tests_opt $(BUILD_DIR)/naive_tests_opt $(BUILD_DIR)/neighbour_tests $(BUILD_DIR)/naive_tests $(BUILD_DIR)/neighbour_par_tests $(BUILD_DIR)/neighbour_par_tests_opt
+TARGETS = $(BUILD_DIR)/neighbour_tests_opt $(BUILD_DIR)/naive_tests_opt $(BUILD_DIR)/neighbour_tests $(BUILD_DIR)/naive_tests $(BUILD_DIR)/neighbour_par_tests $(BUILD_DIR)/neighbour_par_tests_opt $(BUILD_DIR)/main
 
 all: $(TARGETS)
+
+$(BUILD_DIR)/main: $(BUILD_DIR)/neighbour_refs_par.o main.cpp
+	g++ $(OPT_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/neighbour_par_tests_opt: test_main.cpp $(BUILD_DIR)/neighbour_refs_par.o
 	g++ -DNEIGHBOUR_PAR $(OPT_FLAGS) $^ -o $@
