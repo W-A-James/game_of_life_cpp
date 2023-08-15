@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   Life life{columns, rows, 0.4};
 
   while (true) {
-    system("clear");
+    int res = system("clear");
     life.step();
     std::cout << life.toString();
     std::this_thread::sleep_for(60ms);
