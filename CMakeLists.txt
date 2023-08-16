@@ -21,30 +21,36 @@ target_link_libraries(neighbour_refs_par pthread)
 
 # TODO: add opt flags
 add_library(neighbour_refs_par_opt neighbour_refs_par.cpp)
-target_link_libraries(neighbour_refs_par pthread)
+target_compile_options(neighbour_refs_par_opt PRIVATE "-O2")
+target_link_libraries(neighbour_refs_par_opt pthread)
 
 # Neighbour refs
 add_library(neighbour_refs neighbour_refs.cpp)
 
 # TODO: add opt flags
 add_library(neighbour_refs_opt neighbour_refs.cpp)
+target_compile_options(neighbour_refs_opt PRIVATE "-O2")
 
 # Naive impl
 add_library(naive naive.cpp)
 # TODO: add opt flags
 add_library(naive_opt naive.cpp)
+target_compile_options(naive_opt PRIVATE "-O2")
 
 # Main
 add_executable(main main.cpp)
+target_compile_options(main PRIVATE "-O2")
 target_link_libraries(main neighbour_refs_par)
 
+# Create list of implementation files
 list(APPEND Libs naive neighbour_refs neighbour_refs_par)
 
 # Test executables
-foreach(lib in LISTS Libs)
+foreach(lib IN LISTS Libs)
   add_executable("test_${lib}" test_main.cpp)
   target_link_libraries("test_${lib}" "${lib}")
 
   add_executable("test_${lib}_opt" test_main.cpp)
+  target_compile_options("test_${lib}_opt" PRIVATE "-O2")
   target_link_libraries("test_${lib}_opt" "${lib}_opt")
 endforeach()
