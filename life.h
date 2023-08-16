@@ -6,20 +6,38 @@
 #include <string>
 #include <vector>
 
-class LifeTemplate {
+#define ALIVE ('#')
+#define DEAD (' ')
+
+class Life {
 public:
-  LifeTemplate() {}
-  LifeTemplate(const std::size_t w, const std::size_t h) {}
-  LifeTemplate(const std::size_t w, const std::size_t h, const double rd) {}
-  ~LifeTemplate(){};
+  Life(const std::size_t w, const std::size_t h);
+  ~Life();
 
-  virtual void set(const std::vector<std::size_t> idxs) = 0;
+  Life(const std::size_t w, const std::size_t h, const double rd);
 
-  virtual void clear(const std::vector<std::size_t> idxs) = 0;
+  void set(const std::vector<std::size_t> idxs) const;
 
-  virtual bool get(const std::size_t idx) = 0;
+  void clear(const std::vector<std::size_t> idxs) const;
 
-  virtual void step() = 0;
-  virtual std::string toString() = 0;
+  bool get(const std::size_t) const;
 
+  void step() const;
+
+  std::string toString() const;
+
+  enum Change {
+    Live,
+    Dead,
+  };
+
+  struct BoardChange {
+    Change change;
+    std::size_t idx;
+  };
+
+  class LifeImpl;
+
+private:
+  LifeImpl *m_impl;
 };

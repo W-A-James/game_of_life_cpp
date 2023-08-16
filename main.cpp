@@ -1,4 +1,4 @@
-#include "neighbour_refs_par.h"
+#include "life.h"
 #include <chrono>
 #include <iostream>
 #include <thread>

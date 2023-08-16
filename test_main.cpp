@@ -1,18 +1,4 @@
-#ifdef LINT
-#include "naive.h"
-#endif
-
-#ifdef NEIGHBOUR
-#include "neighbour_refs.h"
-#endif
-
-#ifdef NEIGHBOUR_PAR
-#include "neighbour_refs_par.h"
-#endif
-
-#ifdef NAIVE
-#include "naive.h"
-#endif
+#include "life.h"
 
 #include <chrono>
 #include <exception>
