@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#define ALIVE ('#')
-#define DEAD (' ')
+#define ALIVE ('X')
+#define DEAD ('.')
 
 class Life {
 public:

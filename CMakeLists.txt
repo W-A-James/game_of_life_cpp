@@ -40,7 +40,10 @@ target_compile_options(naive_opt PRIVATE "-O2")
 # Main
 add_executable(main main.cpp)
 target_compile_options(main PRIVATE "-O2")
-target_link_libraries(main neighbour_refs_par)
+target_link_libraries(main
+  neighbour_refs_par
+  ncurses
+  )
 
 # Create list of implementation files
 list(APPEND Libs naive neighbour_refs neighbour_refs_par)
